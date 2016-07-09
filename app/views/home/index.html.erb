@@ -1,0 +1,70 @@
+
+<div class="container">
+    <form action="/home/write" method="POST" style="margin-top : 70px; margin-bottom : 30px;" enctype="multipart/form-data">
+        
+      <div class="form-group">
+        <label for="exampleInputEmail1"> 제목 </label>
+        <input type="text" name="title" class="form-control" id="exampleInputEmail1" placeholder="제목을 입력하세요.">
+      </div>
+      
+      <div class="form-group">
+        <label for="exampleInputPassword1"> 내용 </label>
+        <textarea name="content" class="form-control" rows="5" id="comment" placeholder="내용을 입력하세요."></textarea>
+        <br>
+        <input type="file" name="pic" accept="image/*"></textarea>
+      </div>
+
+      <button type="submit" class="btn btn-default"> 제출 </button>
+      
+    </form>
+
+    <% @posts.each do |p| %>
+        <div class="well"> 
+            <span style="font-weight : bold;"> <%= p.title %> </span> <br>
+            <%= p.content %>
+            <br>
+            <% unless p.image_url.nil? %>
+            <img src="<%= p.image_url %>">
+            <% end %>
+              
+            <div id="reply_<%= p.id %>">
+              <% p.replies.each do |r| %>
+                <p> <%= r.content %> </p>
+              <% end %>
+            </div>
+              
+            <div class="form-group">
+              <label for="exampleInputPassword1"> 댓글 </label>
+              <input type="hidden" value="<%= p.id %>" name="id_of_post">
+              <textarea name="content" class="form-control" rows="1" id="comment_<%= p.id %>" placeholder="댓글을 입력하세요."></textarea>
+            </div>
+          
+            <button type="submit" class="btn btn-default reply_submit" value="<%= p.id %>"> 제출 </button>
+        </div>
+    <% end %>
+</div>
+
+<script>
+$('.reply_submit').click(function(){
+  
+  post_id = this.value;
+  post_content = $("#comment_" + post_id).val();
+  
+  $.ajax({
+    method: "POST",
+    url: "/home/reply_write",
+    data: { content: post_content, 
+         id_of_post: post_id},
+         
+    success: function(){
+      $("#reply_" + post_id).append('<p>' + post_content + '</p>');
+      $("#comment_" + post_id).val('');
+    },
+    
+    error: function(){
+      alert("댓글 작성 실패!");
+    }
+    
+  })
+});
+</script>
